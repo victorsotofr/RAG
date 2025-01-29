@@ -112,4 +112,5 @@ The useful resources were:
 ---
 
 Victor
+
 Worked with: ChatGPT, MistralAI
