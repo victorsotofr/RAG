@@ -123,7 +123,7 @@ while True:
     question = input("\n ❓ Your question: ").strip()
 
     if question.lower() == "exit": # Exit condition
-        print("Thanks for using us! 🙏🏼")
+        print("Thanks for using us! 🙏🏼 ")
         break
 
     # Get response from the RAG system
