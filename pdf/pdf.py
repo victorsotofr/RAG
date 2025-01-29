@@ -1,3 +1,11 @@
+# ==========================================
+# RAG SYSTEM FOR PDFs
+# Extracts information from PDFs and allows users to ask questions.
+# ==========================================
+# SOURCES:
+# MAIN GUIDE: https://python.langchain.com/docs/tutorials/rag/
+# ==========================================
+
 import os
 import getpass
 import faiss
@@ -7,43 +15,80 @@ from sentence_transformers import SentenceTransformer
 import openai
 import tiktoken  # Tokenizer to estimate token count
 
-# Ask for API key if not set in the environment
+# ==========================================
+# SETTING UP OPENAI API KEY
+# ==========================================
+
 if not os.environ.get("OPENAI_API_KEY"):
     os.environ["OPENAI_API_KEY"] = getpass.getpass("Enter your OpenAI API key: ")
 
-openai.api_key = os.environ["OPENAI_API_KEY"]  # Set API key
+openai.api_key = os.environ["OPENAI_API_KEY"]
 
-# Initialize embedding model
+# ==========================================
+# MODELS INITIALIZATION
+# ==========================================
+
+# Load Sentence Transformer embedding model
 embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
 
 # Directory to store PDFs
 PDF_DIR = "./pdfs"
 os.makedirs(PDF_DIR, exist_ok=True)
 
-# Function to extract text from PDF
+# ==========================================
+# TEXT EXTRACTION FROM PDF
+# ==========================================
+
 def extract_text_from_pdf(pdf_path):
+    """Extracts text from a given PDF file."""
     with open(pdf_path, "rb") as file:
         reader = PyPDF2.PdfReader(file)
         text = "\n".join([page.extract_text() for page in reader.pages if page.extract_text()])
+    
+    print(f"\nExtracted text from {pdf_path} (First 500 characters):\n{text[:500]}...\n")  # Debugging
     return text
 
-# Function to embed text and store in FAISS index
+# ==========================================
+# TEXT INDEXING - FAISS
+# ==========================================
+faiss.omp_set_num_threads(1)
+
 def build_faiss_index(text_chunks):
-    embeddings = embedding_model.encode(text_chunks, convert_to_numpy=True, show_progress_bar=True, batch_size=4)
+    """Embeds text chunks and stores them in a FAISS index."""
+    embeddings = embedding_model.encode(text_chunks, convert_to_numpy=True, show_progress_bar=True, batch_size=1)  # Reduce batch size
     dimension = embeddings.shape[1]
     index = faiss.IndexFlatL2(dimension)
     index.add(embeddings)
+
+    print(f"\nIndexed {len(text_chunks)} text chunks in FAISS.\n")  # Debugging
     return index, text_chunks
 
-# Function to retrieve relevant chunks
-def retrieve_relevant_chunks(query, index, text_chunks, top_k=3):
-    query_embedding = embedding_model.encode([query], convert_to_numpy=True)
-    distances, indices = index.search(query_embedding, top_k)
-    return [text_chunks[i] for i in indices[0] if i < len(text_chunks)]
+# ==========================================
+# RETRIEVAL FUNCTION
+# ==========================================
 
-# Function to trim context within token limit
+
+def retrieve_relevant_chunks(query, index, text_chunks, top_k=3):
+    """Finds the most relevant text chunks based on the user's query."""
+    query_embedding = embedding_model.encode([query], convert_to_numpy=True)
+    
+    if not index.is_trained or index.ntotal == 0:
+        print("\n FAISS index is empty! Skipping retrieval.")
+        return []
+    
+    distances, indices = index.search(query_embedding, min(top_k, index.ntotal))
+
+    retrieved_texts = [text_chunks[i] for i in indices[0] if i < len(text_chunks)]
+
+    print(f"\nRetrieved {len(retrieved_texts)} chunks for query: '{query}'")
+    return retrieved_texts
+
+# ==========================================
+# TRIM CONTEXT WITHIN TOKEN LIMIT
+# ==========================================
+
 def trim_context(relevant_chunks, max_tokens=4000):
-    """Trims context to ensure it doesn't exceed the model's token limit."""
+    """Ensures the retrieved text remains within the model's token limit."""
     encoding = tiktoken.encoding_for_model("gpt-4")
     token_count = 0
     trimmed_chunks = []
@@ -51,17 +96,26 @@ def trim_context(relevant_chunks, max_tokens=4000):
     for chunk in relevant_chunks:
         chunk_tokens = encoding.encode(chunk)
         if token_count + len(chunk_tokens) > max_tokens:
-            break  # Stop adding if it exceeds limit
+            break
         trimmed_chunks.append(chunk)
         token_count += len(chunk_tokens)
 
+    print(f"\nUsing {token_count} tokens (limit: {max_tokens}).\n")  # Debugging
     return "\n".join(trimmed_chunks)
 
-# Function to generate an answer using OpenAI
+# ==========================================
+# RESPONSE GENERATION FUNCTION
+# ==========================================
+
 def generate_answer(query, relevant_chunks):
-    context = trim_context(relevant_chunks)  # Trim context dynamically
+    """Generates an AI response using GPT-4 based on retrieved document excerpts."""
+    context = trim_context(relevant_chunks)
+    
+    if not context:
+        return "I don't know based on the provided documents."
+
     prompt = f"""
-    You are an AI assistant that answers questions based strictly on the provided document excerpts.
+    You are an AI assistant that answers questions strictly based on the provided document excerpts.
     If the context does not contain the answer, simply respond: "I don't know based on the provided documents."
 
     Context:
@@ -79,20 +133,46 @@ def generate_answer(query, relevant_chunks):
 
     return response.choices[0].message.content  # Extract answer
 
-# Main function to load PDFs, index, and query
+# ==========================================
+# MAIN FOR LOAD, INDEX, QUERY
+# ==========================================
+
 def main():
+    """Loads PDFs, builds FAISS index, and starts an interactive Q&A loop."""
+    
     pdf_files = [os.path.join(PDF_DIR, f) for f in os.listdir(PDF_DIR) if f.endswith(".pdf")]
+    
+    if not pdf_files:
+        print("No PDF files found in the 'pdfs' directory. Please add PDFs and try again.")
+        return
+    
     all_text = "\n".join([extract_text_from_pdf(pdf) for pdf in pdf_files])
     text_chunks = all_text.split("\n\n")  # Simple chunking by paragraphs
-    # index, chunks = build_faiss_index(text_chunks)
-    
+
+    # Build FAISS index
+    index, chunks = build_faiss_index(text_chunks)
+
+    print("\nReady for questions! Type 'exit' to quit.")
+
     while True:
-        query = input("Ask a question (or type 'exit' to quit): ")
+        query = input("\n❓ Your question: ").strip()
+
         if query.lower() == "exit":
+            print("\nExiting. Thanks for using the PDF Q&A system!")
             break
-        relevant_chunks = text_chunks[:3]
+
+        relevant_chunks = retrieve_relevant_chunks(query, index, text_chunks, top_k=5)  # Increase retrieval depth
+
+        if not relevant_chunks:
+            print("\nNo relevant text found! Try rephrasing your question.\n")
+            continue
+
         answer = generate_answer(query, relevant_chunks)
-        print("Answer:\n", answer)
+        print("\n💡 Answer:\n", answer)
+
+# ==========================================
+# RUN MAIN FUNCTION
+# ==========================================
 
 if __name__ == "__main__":
     main()

@@ -11,7 +11,7 @@ import getpass
 import bs4
 from typing_extensions import List, TypedDict
 
-# 📚 LangChain Imports
+# LangChain Imports
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_core.vectorstores import InMemoryVectorStore
 from langchain_community.document_loaders import WebBaseLoader
@@ -123,7 +123,7 @@ while True:
     question = input("\n ❓ Your question: ").strip()
 
     if question.lower() == "exit": # Exit condition
-        print("Thanks for using us! 🙏🏼 ")
+        print("Thanks for using us!")
         break
 
     # Get response from the RAG system
