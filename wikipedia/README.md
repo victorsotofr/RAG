@@ -88,4 +88,5 @@ The useful resources were:
 ---
 
 Zizou.
+
 Worked with: ChatGPT, MistralAI
