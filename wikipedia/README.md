@@ -8,16 +8,6 @@ The system retrieves relevant information from the Wikipedia article and generat
 
 ---
 
-## Features  
-
-1. **Wikipedia Scraping** – Extracts content from Zidane's Wikipedia page.  
-2. **Text Chunking & Indexing** – Splits and stores content for efficient retrieval (vector database).  
-3. **Interactive Q&A** – Users can ask questions in a chat-like format.  
-4. **Context-Aware Responses** – Provides relevant answers based on retrieved documents.  
-5. **Exit Option** – Users can type "exit" to quit the chat.  
-
----
-
 ## How It Works  
 
 **Web Scraping**: Loads Zidane's Wikipedia page and extracts the main content.  
@@ -32,14 +22,14 @@ The system retrieves relevant information from the Wikipedia article and generat
 
 ## Setup & Installation  
 
-### Install Dependencies  
+### 1. Install Dependencies  
 Ensure you have Python and the required packages installed:  
 
 ```bash
 pip install langchain langchain_openai langchain_core langchain_community bs4
 ```
 
-### Set Your OpenAI API Key  
+### 2. Set Your OpenAI API Key  
 Before running, set your OpenAI API key:  
 
 ```python
@@ -48,7 +38,7 @@ os.environ["OPENAI_API_KEY"] = "your-api-key-here"
 ```
 -> you can copy/paste it in a chat-box style.
 
-### Run the Script  
+### 3. Run the Script  
 Start the interactive Q&A system:  
 
 ```bash
@@ -70,6 +60,14 @@ To exit, simply type **"exit"**.
 
 ---
 
+## Notes  
+
+- If the context does not contain the answer, GPT-4 will respond:
+  *"I don't know based on the provided documents."*  
+- This system is optimized for questions about Zidane, but can be modified for other topics.  
+
+---
+
 ## Resources  
 
 The main basis for the work was:
@@ -78,14 +76,6 @@ The main basis for the work was:
 The useful resources were:
 - **Wikipedia API**: [LangChain Wikipedia Loaders](https://python.langchain.com/docs/integrations/document_loaders/wikipedia/)  
 - **Vector Stores**: [LangChain VectorStores](https://python.langchain.com/docs/concepts/vectorstores/)  
-
----
-
-## Notes  
-
-- If the system doesn’t find an answer, it will return:  
-  *"I don't know based on the provided corpus."*  
-- This system is optimized for questions about Zidane, but can be modified for other topics.  
 
 ---
 
@@ -98,3 +88,4 @@ The useful resources were:
 ---
 
 Zizou.
+Worked with: ChatGPT, MistralAI
