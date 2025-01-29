@@ -2,6 +2,8 @@
 
 This project implements a **Retrieval-Augmented Generation (RAG) system** that scrapes **Wikipedia's "Zinedine Zidane" page** and allows users to ask questions about him. 
 
+![Zidane Headbutt](https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Zidane-headbutt.jpg/800px-Zidane-headbutt.jpg)
+
 The system retrieves relevant information from the Wikipedia article and generates responses using OpenAI's **GPT-4o-mini**.
 
 ---
