@@ -3,4 +3,4 @@
 
  Next:
  - pdf RAG fixing
- - Tweeter's API scraping & RAG application
+ - Using Twitter API for RAG-based AI
