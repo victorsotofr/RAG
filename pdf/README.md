@@ -1,4 +1,5 @@
 ## PDF Q&A System using OpenAI GPT-4 and FAISS
+## DOESN'T WORK FOR THE MOMENT
 
 This project enables users to **ask questions** based on the content of **PDF documents**. 
 
