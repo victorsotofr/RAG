@@ -1,5 +1,4 @@
 ## PDF Q&A System using OpenAI GPT-4 and FAISS
-## DOESN'T WORK FOR THE MOMENT...
 
 This project enables users to **ask questions** based on the content of **PDF documents**. 
 
@@ -10,19 +9,16 @@ By extracting text from PDFs, embedding it using **SentenceTransformers**, and i
 ## How It Works
 
 **PDF Text Extraction**  
-  Uses **PyPDF2** to extract text from PDF files.
+  Uses **PyPDFLoader** from langchain to extract text from PDF files.
 
 **Text Embedding & Indexing**  
-  - Embeds text using **SentenceTransformers** (`all-MiniLM-L6-v2`).
+  - Embeds text using **OpenAIEmbeddings**.
   - Indexes embeddings with **FAISS** for efficient similarity search.
 
 **Interactive Q&A**  
   - Users input questions.
-  - Relevant document excerpts are retrieved.
+  - Relevant document excerpts are retrieved using **VectorStoreRetriever**.
   - GPT-4 generates answers based on retrieved content.
-
-**Token Management**  
-  - Uses **tiktoken** to manage token limits for GPT-4.
 
 ---
 
@@ -33,18 +29,12 @@ By extracting text from PDFs, embedding it using **SentenceTransformers**, and i
 Ensure Python is installed and install the required packages:
 
 ```bash
-pip install openai faiss-cpu PyPDF2 sentence-transformers tiktoken
+pip install langchain langchain_openai langchain_community langchain_core 
 ```
 
 ### 2. Set Your OpenAI API Key
 
-Before running, set your OpenAI API key:
-
-```python
-import os
-os.environ["OPENAI_API_KEY"] = "your-api-key-here"
-```
--> you can copy/paste it in a chat-box style.
+Before running, prepare your OpenAI API key; it will be asked to you in a chat-box style!
 
 ### 3. Prepare PDF Files
 
@@ -67,6 +57,8 @@ Execute the Python script to start the interactive Q&A:
 ```bash
 python script.py
 ```
+
+**pdf_v2.py** is currently the only working version!
 
 ---
 
@@ -96,11 +88,15 @@ Source: [FAISS LangChain](https://python.langchain.com/docs/integrations/vectors
 
 The main basis for the work was:
 - **LangChain RAG Guide**: [LangChain RAG Tutorial](https://python.langchain.com/docs/tutorials/rag/)
+I was really helped by this guy:
+- **FAISS Vector Library with LangChain and OpenAI (Semantic Search)**: [YouTube](https://www.youtube.com/watch?v=ZCSsIkyCZk4)
 
 The useful resources were:
 - **FAISS Documentation**: [FAISS LangChain](https://python.langchain.com/docs/integrations/vectorstores/faiss/)  
 - **OpenAI GPT-4**: [OpenAI API Documentation](https://beta.openai.com/docs/api-reference/introduction)  
 - **SentenceTransformers**: [SentenceTransformers Documentation](https://www.sbert.net/)  
+
+Credits also to **Aaron Wang** for his superb DataScience CheatSheet that I am using for running my code example on this repo :)
 
 ---
 
