@@ -10,7 +10,7 @@ By extracting text from PDFs, embedding it using **SentenceTransformers**, and i
 ## How It Works
 
 **PDF Text Extraction**  
-  Utilizes **PyPDF2** to extract text from PDF files.
+  Uses **PyPDF2** to extract text from PDF files.
 
 **Text Embedding & Indexing**  
   - Embeds text using **SentenceTransformers** (`all-MiniLM-L6-v2`).
