@@ -9,7 +9,7 @@ By extracting text from PDFs, embedding it using **SentenceTransformers**, and i
 ## How It Works
 
 **PDF Text Extraction**  
-  Uses **PyPDFLoader** from langchain to extract text from PDF files.
+  - Uses **PyPDFLoader** from langchain to extract text from PDF files.
 
 **Text Embedding & Indexing**  
   - Embeds text using **OpenAIEmbeddings**.
