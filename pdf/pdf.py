@@ -5,7 +5,6 @@
 # SOURCES:
 # MAIN GUIDE: https://python.langchain.com/docs/tutorials/rag/
 # ==========================================
-
 import os
 import getpass
 import faiss
@@ -14,48 +13,48 @@ import PyPDF2
 from sentence_transformers import SentenceTransformer
 import openai
 import tiktoken  # Tokenizer to estimate token count
+import gc # Garbage collector for memory management
+import signal # Handles crashes gracefully
 
 # ==========================================
 # SETTING UP OPENAI API KEY
 # ==========================================
-
 if not os.environ.get("OPENAI_API_KEY"):
-    os.environ["OPENAI_API_KEY"] = getpass.getpass("Enter your OpenAI API key: ")
+    openai.api_key = getpass.getpass("Enter your API key here: ")
+else:
+    openai.api_key = os.environ["OPENAI_API_KEY"]
 
-openai.api_key = os.environ["OPENAI_API_KEY"]
+# ==========================================
+# FAISS THREAD MANAGEMENT (PREVENT FAULTS)
+# ==========================================
+faiss.omp_set_num_threads(1) # ensures faiss doesn't overuse CPU
 
 # ==========================================
 # MODELS INITIALIZATION
 # ==========================================
-
-# Load Sentence Transformer embedding model
+# Load the embedding model:
 embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
 
-# Directory to store PDFs
+# Path to the directory storing the PDFs:
 PDF_DIR = "./pdfs"
 os.makedirs(PDF_DIR, exist_ok=True)
 
 # ==========================================
 # TEXT EXTRACTION FROM PDF
 # ==========================================
-
 def extract_text_from_pdf(pdf_path):
     """Extracts text from a given PDF file."""
     with open(pdf_path, "rb") as file:
         reader = PyPDF2.PdfReader(file)
-        text = "\n".join([page.extract_text() for page in reader.pages if page.extract_text()])
-    
-    print(f"\nExtracted text from {pdf_path} (First 500 characters):\n{text[:500]}...\n")  # Debugging
-    return text
+        text = "\n".join([page.extract_text() or "" for page in reader.pages])
+    return text.strip()
 
 # ==========================================
 # TEXT INDEXING - FAISS
 # ==========================================
-faiss.omp_set_num_threads(1)
-
 def build_faiss_index(text_chunks):
     """Embeds text chunks and stores them in a FAISS index."""
-    embeddings = embedding_model.encode(text_chunks, convert_to_numpy=True, show_progress_bar=True, batch_size=1)  # Reduce batch size
+    embeddings = embedding_model.encode(text_chunks, convert_to_numpy=True, show_progress_bar=True, batch_size=32)
     dimension = embeddings.shape[1]
     index = faiss.IndexFlatL2(dimension)
     index.add(embeddings)
@@ -66,8 +65,6 @@ def build_faiss_index(text_chunks):
 # ==========================================
 # RETRIEVAL FUNCTION
 # ==========================================
-
-
 def retrieve_relevant_chunks(query, index, text_chunks, top_k=3):
     """Finds the most relevant text chunks based on the user's query."""
     query_embedding = embedding_model.encode([query], convert_to_numpy=True)
@@ -86,12 +83,10 @@ def retrieve_relevant_chunks(query, index, text_chunks, top_k=3):
 # ==========================================
 # TRIM CONTEXT WITHIN TOKEN LIMIT
 # ==========================================
-
 def trim_context(relevant_chunks, max_tokens=4000):
     """Ensures the retrieved text remains within the model's token limit."""
     encoding = tiktoken.encoding_for_model("gpt-4")
-    token_count = 0
-    trimmed_chunks = []
+    token_count, trimmed_chunks = 0, []
 
     for chunk in relevant_chunks:
         chunk_tokens = encoding.encode(chunk)
@@ -106,7 +101,6 @@ def trim_context(relevant_chunks, max_tokens=4000):
 # ==========================================
 # RESPONSE GENERATION FUNCTION
 # ==========================================
-
 def generate_answer(query, relevant_chunks):
     """Generates an AI response using GPT-4 based on retrieved document excerpts."""
     context = trim_context(relevant_chunks)
@@ -134,9 +128,8 @@ def generate_answer(query, relevant_chunks):
     return response.choices[0].message.content  # Extract answer
 
 # ==========================================
-# MAIN FOR LOAD, INDEX, QUERY
+# MAIN EXECUTION
 # ==========================================
-
 def main():
     """Loads PDFs, builds FAISS index, and starts an interactive Q&A loop."""
     
