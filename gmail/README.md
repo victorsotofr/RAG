@@ -1,28 +1,21 @@
-## PDF Q&A System using OpenAI GPT-4 and FAISS
-## DOESN'T WORK FOR THE MOMENT...
+## Email (Gmail) synthesis using RAG
+## WIP
 
-This project enables users to **ask questions** based on the content of **PDF documents**. 
-
-By extracting text from PDFs, embedding it using **SentenceTransformers**, and indexing it with **FAISS**, the system retrieves relevant information and generates context-aware answers using **OpenAI's GPT-4**.
+This project enables users to **create syntheses** of **emails** from his Gmail adresse. 
 
 ---
 
 ## How It Works
 
-**PDF Text Extraction**  
-  Uses **PyPDF2** to extract text from PDF files.
+**Fetches last 24h emails from Gmail inbox**  
+  - Uses **API** to extract the targeted emails.
 
 **Text Embedding & Indexing**  
-  - Embeds text using **SentenceTransformers** (`all-MiniLM-L6-v2`).
-  - Indexes embeddings with **FAISS** for efficient similarity search.
+  - Embeds emails' information using **FAISS**.
 
-**Interactive Q&A**  
-  - Users input questions.
-  - Relevant document excerpts are retrieved.
-  - GPT-4 generates answers based on retrieved content.
-
-**Token Management**  
-  - Uses **tiktoken** to manage token limits for GPT-4.
+**Structured Summary**  
+  - Uses RAG.
+  - Sends the Summary to the inbox every morning.
 
 ---
 
@@ -33,31 +26,22 @@ By extracting text from PDFs, embedding it using **SentenceTransformers**, and i
 Ensure Python is installed and install the required packages:
 
 ```bash
-pip install openai faiss-cpu PyPDF2 sentence-transformers tiktoken
+WIP
 ```
 
 ### 2. Set Your OpenAI API Key
 
-Before running, set your OpenAI API key:
+Before running, set your OpenAI and Google API keys:
 
 ```python
-import os
-os.environ["OPENAI_API_KEY"] = "your-api-key-here"
+WIP
 ```
 -> you can copy/paste it in a chat-box style.
 
-### 3. Prepare PDF Files
-
-Place your PDF files in a folder named `pdfs` in the project directory:
+### 3. Choose the hour to get your Daily resume!
 
 ```
-/project-directory
-│
-├── script.py
-└── pdfs/
-    ├── document1.pdf
-    ├── document2.pdf
-    └── ...
+WIP
 ```
 
 ### 4. Run the Script
@@ -70,25 +54,11 @@ python script.py
 
 ---
 
-## Usage Example
-
-```bash
-Ask a question (or type 'exit' to quit): What is embedding?
-Answer:
- blabla
-```
-
-To exit, simply type **"exit"**.
-
----
-
 ## Notes
 
-- If the context does not contain the answer, GPT-4 will respond:
-  *"I don't know based on the provided documents."*  
 - The FAISS index allows rapid retrieval of relevant text snippets.
 Source: [FAISS LangChain](https://python.langchain.com/docs/integrations/vectorstores/faiss/)
-- This system is designed for local PDF documents but can be adapted for other text sources.  
+- This system is designed for your Gmail inbox but can be adapted to other email inboxes.  
 
 ---
 
@@ -106,9 +76,7 @@ The useful resources were:
 
 ## Future Improvements
 
-- **Add support for other document types** (e.g., DOCX, TXT)  
-- **Enable web-based interface** for remote access  
-- **Optimize embedding model** for larger documents (the token limit is not practical)
+WIP
 
 ---
 
